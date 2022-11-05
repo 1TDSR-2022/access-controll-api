@@ -1,56 +1,55 @@
 package br.com.fiap.dao;
 
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.List;
+
+import br.com.fiap.factory.ConectionFactory;
 import br.com.fiap.to.UsuarioTO;
 
 public class UsuarioDAO {
-	public static List<UsuarioTO> listaUsuario;
+	private Connection con = null;
 
 	public UsuarioDAO() {
-		if (listaUsuario == null) {
-			listaUsuario = new ArrayList<UsuarioTO>();
-			
-			UsuarioTO user = new UsuarioTO();
-			user.setLogin("Selva");
-			user.setSenha("12345");
-			listaUsuario.add(user);
-			
-			user = new UsuarioTO();
-			user.setLogin("2");
-			user.setSenha("2");
-			listaUsuario.add(user);
-			
-			user = new UsuarioTO();
-			user.setLogin("3");
-			user.setSenha("3");
-			listaUsuario.add(user);
-			
-			user = new UsuarioTO();
-			user.setLogin("4");
-			user.setSenha("4");
-			listaUsuario.add(user);
-			
-			user = new UsuarioTO();
-			user.setLogin("5");
-			user.setSenha("5");
-			listaUsuario.add(user);
-		}
-
+		this.con = new ConectionFactory().getConnection();
 	}
 
 	public UsuarioTO loginDAO(UsuarioTO u) {
-		for (int i = 0; i < listaUsuario.size(); i++) {
-			if (listaUsuario.get(i).getLogin().equals(u.getLogin())
-					&& listaUsuario.get(i).getSenha().equals(u.getSenha())) {
-					
-				System.out.println("O USUÁRIO " + listaUsuario.get(i).getLogin() + " LOGOU ÁS " + Calendar.getInstance().getTime());
-				
-				return listaUsuario.get(i);
+		
+		PreparedStatement ps = null;
+		
+		try {
+			
+			String sqlStr = "SELECT * FROM T_uncleplhil_usuario WHERE DS_LOGIN = ? AND DS_SENHA = ?";
+			
+			ps = con.prepareStatement(sqlStr);
+			
+			ps.setString(1, u.getLogin());
+			ps.setString(2, u.getSenha());
+			
+			ResultSet rs =  ps.executeQuery();
+			
+			UsuarioTO ut = null;
+			
+			while (rs.next()) {
+				ut = new UsuarioTO();
+				ut.setLogin(rs.getNString(1));
+				ut.setSenha(rs.getNString(2));
 			}
+			
+			rs.close();
+			ps.close();
+			con.close();
+			
+			System.out.println("O USUÃRIO : " + u.getLogin() + " LOGOU ÃS " + Calendar.getInstance().getTime());
+			
+			return u;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		System.out.println("O USUÁRIO " + u.getLogin() + " NÃO CONSIGOU LOGAR ÁS " + Calendar.getInstance().getTime());
 		return null;
 	}
 }
